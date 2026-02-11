@@ -1,0 +1,51 @@
+name: Deploy Python App to Tanzu CF (cf10 CLI)
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      # -----------------------------------------
+      # Install Broadcom cf10 CLI from .deb
+      # -----------------------------------------
+      - name: Install cf10 CLI (Broadcom)
+        run: |
+          sudo dpkg -i .github/cf-cli/cf10-cli-installer_*.deb
+          sudo apt-get install -f -y
+          cf --version
+
+      # -----------------------------------------
+      # Login to Tanzu CF
+      # -----------------------------------------
+      - name: Authenticate to Tanzu CF
+        env:
+          CF_API: ${{ secrets.CF_API }}
+          CF_ORG: ${{ secrets.CF_ORG }}
+          CF_SPACE: ${{ secrets.CF_SPACE }}
+          CF_USERNAME: ${{ secrets.CF_USERNAME }}
+          CF_PASSWORD: ${{ secrets.CF_PASSWORD }}
+        run: |
+          cf api "$CF_API" --skip-ssl-validation
+          cf auth "$CF_USERNAME" "$CF_PASSWORD"
+          cf target -o "$CF_ORG" -s "$CF_SPACE"
+
+      # -----------------------------------------
+      # Deploy using manifest.yml
+      # -----------------------------------------
+      - name: Deploy app
+        run: |
+          cf push
+
+      # -----------------------------------------
+      # Verify
+      # -----------------------------------------
+      - name: Show apps
+        run: |
+          cf apps
