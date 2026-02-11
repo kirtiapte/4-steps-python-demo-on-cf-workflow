@@ -1,22 +1,17 @@
-name: Deploy Python App to Tanzu CF (cf10 CLI)
+name: Deploy Python App to Tanzu CF
 
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:   # optional: allows manual trigger
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted   # runs on your Mac self-hosted runner
 
     steps:
       # -----------------------------------------
-      # Checkout the workflow repo (optional)
-      # -----------------------------------------
-      - name: Checkout workflow repo
-        uses: actions/checkout@v4
-
-      # -----------------------------------------
-      # Checkout the app repo from GitHub
+      # Checkout the app repo
       # -----------------------------------------
       - name: Checkout app repo
         uses: actions/checkout@v4
@@ -24,20 +19,10 @@ jobs:
           repository: kirtiapte/4-steps-python-demo-on-cf
           ref: main
           token: ${{ secrets.GITHUB_TOKEN }}
-          path: app  # clones into ./app folder
+          path: app   # clones into ./app
 
       # -----------------------------------------
-      # Install Broadcom cf10 CLI from .deb
-      # -----------------------------------------
-      
-      - name: Install cf10 CLI (Broadcom)
-        run: |
-          wget -q -O cf-cli.deb "https://packages.cloudfoundry.org/stable?release=debian64&version=8.7.3"
-          sudo dpkg -i cf-cli.deb
-          sudo apt-get install -f -y
-          cf --version
-      # -----------------------------------------
-      # Login to Tanzu CF
+      # Authenticate to Tanzu CF
       # -----------------------------------------
       - name: Authenticate to Tanzu CF
         env:
@@ -47,21 +32,22 @@ jobs:
           CF_USERNAME: ${{ secrets.CF_USERNAME }}
           CF_PASSWORD: ${{ secrets.CF_PASSWORD }}
         run: |
+          echo "Logging into Tanzu CF..."
           cf api "$CF_API" --skip-ssl-validation
           cf auth "$CF_USERNAME" "$CF_PASSWORD"
           cf target -o "$CF_ORG" -s "$CF_SPACE"
 
       # -----------------------------------------
-      # Deploy using manifest.yml from app repo
+      # Deploy the app from subfolder
       # -----------------------------------------
-      - name: Deploy app
+      - name: Deploy 03-cf-quotes-semantic
         run: |
-          cd app/03-cf-quotes-semantic        # go to the app repo folder
-          cf push cf-quotes-03-semantic-uv-githubaction
+          echo "Deploying app from 03-cf-quotes-semantic..."
+          cd app/03-cf-quotes-semantic
+          cf push my-app-githubaction   # overrides manifest name
 
       # -----------------------------------------
       # Verify deployment
       # -----------------------------------------
-      - name: Show apps
-        run: |
-          cf apps
+      - name: Show deployed apps
+        run: cf apps
