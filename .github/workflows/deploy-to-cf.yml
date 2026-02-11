@@ -50,4 +50,4 @@ jobs:
       # Verify deployment
       # -----------------------------------------
       - name: Show deployed apps
-        run: cf apps
+        run: cf apps cf-quotes-03-semantic-uv-with-githubaction
