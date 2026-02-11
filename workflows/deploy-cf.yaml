@@ -9,8 +9,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      # -----------------------------------------
+      # Checkout the workflow repo (optional)
+      # -----------------------------------------
+      - name: Checkout workflow repo
         uses: actions/checkout@v4
+
+      # -----------------------------------------
+      # Checkout the app repo from GitHub
+      # -----------------------------------------
+      - name: Checkout app repo
+        uses: actions/checkout@v4
+        with:
+          repository: kirtiapte/4-steps-python-demo-on-cf
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: app  # clones into ./app folder
 
       # -----------------------------------------
       # Install Broadcom cf10 CLI from .deb
@@ -37,14 +51,15 @@ jobs:
           cf target -o "$CF_ORG" -s "$CF_SPACE"
 
       # -----------------------------------------
-      # Deploy using manifest.yml
+      # Deploy using manifest.yml from app repo
       # -----------------------------------------
       - name: Deploy app
         run: |
+          cd app        # go to the app repo folder
           cf push
 
       # -----------------------------------------
-      # Verify
+      # Verify deployment
       # -----------------------------------------
       - name: Show apps
         run: |
