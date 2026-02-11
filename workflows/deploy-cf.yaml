@@ -55,8 +55,8 @@ jobs:
       # -----------------------------------------
       - name: Deploy app
         run: |
-          cd app        # go to the app repo folder
-          cf push
+          cd app/03-cf-quotes-semantic        # go to the app repo folder
+          cf push cf-quotes-03-semantic-uv-githubaction
 
       # -----------------------------------------
       # Verify deployment
