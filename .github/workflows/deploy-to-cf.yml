@@ -29,12 +29,13 @@ jobs:
       # -----------------------------------------
       # Install Broadcom cf10 CLI from .deb
       # -----------------------------------------
+      
       - name: Install cf10 CLI (Broadcom)
         run: |
-          sudo dpkg -i .github/cf-cli/cf10-cli-installer_*.deb
+          wget -q -O cf-cli.deb "https://packages.cloudfoundry.org/stable?release=debian64&version=8.7.3"
+          sudo dpkg -i cf-cli.deb
           sudo apt-get install -f -y
           cf --version
-
       # -----------------------------------------
       # Login to Tanzu CF
       # -----------------------------------------
