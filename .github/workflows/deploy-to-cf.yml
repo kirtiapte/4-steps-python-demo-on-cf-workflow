@@ -44,7 +44,7 @@ jobs:
         run: |
           echo "Deploying app from 03-cf-quotes-semantic..."
           cd app/03-cf-quotes-semantic
-          cf push cf-quotes-03-semantic-uv-with-githubaction   # overrides manifest name
+          cf push cf-quotes-03-semantic-uv-with-githubaction -f manifest-uv.yml   # overrides manifest name
 
       # -----------------------------------------
       # Verify deployment
