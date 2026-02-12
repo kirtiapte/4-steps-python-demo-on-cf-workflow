@@ -1,0 +1,53 @@
+name: Deploy Python App 4 to Tanzu CF
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:   # optional: allows manual trigger
+
+jobs:
+  deploy:
+    runs-on: self-hosted   # runs on your Mac self-hosted runner
+
+    steps:
+      # -----------------------------------------
+      # Checkout the app repo
+      # -----------------------------------------
+      - name: Checkout app repo
+        uses: actions/checkout@v4
+        with:
+          repository: kirtiapte/4-steps-python-demo-on-cf
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: app   # clones into ./app
+
+      # -----------------------------------------
+      # Authenticate to Tanzu CF
+      # -----------------------------------------
+      - name: Authenticate to Tanzu CF
+        env:
+          CF_API: ${{ secrets.CF_API }}
+          CF_ORG: ${{ secrets.CF_ORG }}
+          CF_SPACE: ${{ secrets.CF_SPACE }}
+          CF_USERNAME: ${{ secrets.CF_USERNAME }}
+          CF_PASSWORD: ${{ secrets.CF_PASSWORD }}
+        run: |
+          echo "Logging into Tanzu CF..."
+          cf api "$CF_API" --skip-ssl-validation
+          cf auth "$CF_USERNAME" "$CF_PASSWORD"
+          cf target -o "$CF_ORG" -s "$CF_SPACE"
+
+      # -----------------------------------------
+      # Deploy the app from subfolder
+      # -----------------------------------------
+      - name: Deploy 04-cf-quotes-mcp
+        run: |
+          echo "Deploying app from 04-cf-quotes-mcp..."
+          cd app/04-cf-quotes-mcp
+          cf push 04-cf-quotes-mcp-with-githubaction -f manifest-uv.yml   # overrides manifest name
+
+      # -----------------------------------------
+      # Verify deployment
+      # -----------------------------------------
+      - name: Show deployed apps
+        run: cf apps
