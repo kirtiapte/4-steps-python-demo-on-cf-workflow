@@ -1,4 +1,4 @@
-name: Deploy Python App to Tanzu CF
+name: Deploy Python App 3 to Tanzu CF
 
 on:
   push:
